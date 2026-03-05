@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="scan-mobile-view fade-in">
+    <div class="event-meta text-center mb-4">
+        <h2>{{ event.name }}</h2>
+        <p>Find your photos instantly!</p>
+    </div>
+
+    <div class="card glass text-center">
+        <h3><i class="fa-solid fa-camera-retro"></i> Take a Selfie</h3>
+        <p>We'll use your selfie to securely scan the event gallery for your photos.</p>
+
+        <!-- Video Stream -->
+        <div class="webcam-container">
+            <video id="video" autoplay playsinline class="hidden"></video>
+            <canvas id="canvas" class="hidden"></canvas>
+            <div id="selfie-preview-container" class="hidden">
+                <img id="selfie-preview" src="" alt="Your selfie">
+            </div>
+
+            <div class="cam-controls mt-3">
+                <button id="start-cam-btn" class="btn primary-btn"><i class="fa-solid fa-camera"></i> Open
+                    Camera</button>
+                <button id="snap-btn" class="btn success-btn hidden"><i class="fa-solid fa-circle-check"></i>
+                    Capture</button>
+                <button id="retake-btn" class="btn danger-btn hidden"><i class="fa-solid fa-rotate-left"></i>
+                    Retake</button>
+            </div>
+
+            <div class="divider"><span>OR</span></div>
+
+            <label for="selfie-upload" class="btn secondary-btn upload-btn">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Upload a Photo
+            </label>
+            <input type="file" id="selfie-upload" accept="image/*" class="hidden-input">
+        </div>
+
+        <div id="scanning-anim" class="hidden">
+            <div class="face-scanner">
+                <div class="scan-line"></div>
+                <img src="" id="scan-target-img" alt="Scanning">
+            </div>
+            <p>Scanning event gallery... <br><small>This may take a few moments</small></p>
+        </div>
+    </div>
+
+    <div id="results-section" class="hidden mt-4">
+        <h3 class="text-center">Your Photos <span id="match-count" class="badge"></span></h3>
+        <p class="text-center text-muted mb-3" id="no-match-text" style="display:none;">We couldn't find any matching
+            photos.</p>
+        <div class="gallery-grid" id="matched-gallery">
+            <!-- Results injected here -->
+        </div>
+        <div class="text-center mt-3">
+            <button id="download-all-btn" class="btn primary-btn" style="display:none;"><i
+                    class="fa-solid fa-download"></i> Download Selected</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const startCamBtn = document.getElementById('start-cam-btn');
+    const snapBtn = document.getElementById('snap-btn');
+    const retakeBtn = document.getElementById('retake-btn');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const selfieUpload = document.getElementById('selfie-upload');
+    const previewContainer = document.getElementById('selfie-preview-container');
+    const previewImg = document.getElementById('selfie-preview');
+    const scanAnim = document.getElementById('scanning-anim');
+    const scanTargetImg = document.getElementById('scan-target-img');
+    const resultsSection = document.getElementById('results-section');
+    const matchedGallery = document.getElementById('matched-gallery');
+
+    let stream = null;
+    let selfieBlob = null;
+    const accessCode = "{{ event.access_code }}";
+
+    // 1. Camera Logic
+    startCamBtn.addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+            video.srcObject = stream;
+            video.classList.remove('hidden');
+            startCamBtn.classList.add('hidden');
+            snapBtn.classList.remove('hidden');
+            previewContainer.classList.add('hidden');
+        } catch (err) {
+            alert("Camera access denied or unavailable. Please use upload option.");
+            console.error(err);
+        }
+    });
+
+    snapBtn.addEventListener('click', () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        let dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        previewImg.src = dataUrl;
+
+        // Stop stream
+        if (stream) stream.getTracks().forEach(track => track.stop());
+
+        video.classList.add('hidden');
+        snapBtn.classList.add('hidden');
+        previewContainer.classList.remove('hidden');
+        retakeBtn.classList.remove('hidden');
+
+        // Convert to blob
+        canvas.toBlob((blob) => {
+            selfieBlob = blob;
+            findMatches();
+        }, 'image/jpeg', 0.8);
+    });
+
+    retakeBtn.addEventListener('click', () => {
+        retakeBtn.classList.add('hidden');
+        startCamBtn.click();
+    });
+
+    // 2. Upload Logic
+    selfieUpload.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+            selfieBlob = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                previewImg.src = ev.target.result;
+                if (stream) stream.getTracks().forEach(track => track.stop());
+                video.classList.add('hidden');
+                startCamBtn.classList.add('hidden');
+                snapBtn.classList.add('hidden');
+                previewContainer.classList.remove('hidden');
+                retakeBtn.classList.remove('hidden');
+
+                findMatches();
+            };
+            reader.readAsDataURL(selfieBlob);
+        }
+    });
+
+    // 3. API Matching
+    async function findMatches() {
+        // Setup UI
+        scanTargetImg.src = previewImg.src;
+        document.querySelector('.cam-controls').classList.add('hidden');
+        document.querySelector('.divider').classList.add('hidden');
+        document.querySelector('.upload-btn').classList.add('hidden');
+        scanAnim.classList.remove('hidden');
+        resultsSection.classList.add('hidden');
+
+        let formData = new FormData();
+        formData.append('selfie', selfieBlob, 'selfie.jpg');
+
+        try {
+            let res = await fetch(`/api/events/${accessCode}/match`, {
+                method: 'POST',
+                body: formData
+            });
+            let data = await res.json();
+
+            scanAnim.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+            matchedGallery.innerHTML = '';
+
+            if (data.success && data.matches.length > 0) {
+                document.getElementById('match-count').innerText = data.matches.length;
+                document.getElementById('no-match-text').style.display = 'none';
+
+                data.matches.forEach(filename => {
+                    let wrapper = document.createElement('div');
+                    wrapper.className = 'gallery-item selectable-photo fade-in';
+                    wrapper.dataset.filename = filename;
+
+                    let img = document.createElement('img');
+                    img.src = `/static/uploads/${filename}`;
+                    img.alt = 'Your photo';
+
+                    let checkOverlay = document.createElement('div');
+                    checkOverlay.className = 'select-overlay';
+                    checkOverlay.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(checkOverlay);
+                    wrapper.addEventListener('click', () => toggleSelect(wrapper));
+                    matchedGallery.appendChild(wrapper);
+                });
+
+                updateDownloadBtn();
+                document.getElementById('download-all-btn').style.display = 'inline-block';
+            } else {
+                document.getElementById('match-count').innerText = '0';
+                document.getElementById('no-match-text').style.display = 'block';
+                document.getElementById('download-all-btn').style.display = 'none';
+            }
+            // Allow retry
+            retakeBtn.classList.remove('hidden');
+            document.querySelector('.cam-controls').classList.remove('hidden');
+        } catch (err) {
+            scanAnim.classList.add('hidden');
+            alert("Error analyzing face.");
+            console.error(err);
+        }
+    }
+
+    // ── Photo selection ──────────────────────────────────────────────
+    function toggleSelect(wrapper) {
+        wrapper.classList.toggle('selected');
+        updateDownloadBtn();
+    }
+
+    function updateDownloadBtn() {
+        const selected = document.querySelectorAll('.selectable-photo.selected');
+        const btn = document.getElementById('download-all-btn');
+        btn.textContent = selected.length > 0
+            ? `Download Selected (${selected.length})`
+            : 'Download Selected';
+        btn.disabled = selected.length === 0;
+        btn.style.opacity = selected.length === 0 ? '0.5' : '1';
+    }
+
+    document.getElementById('download-all-btn').addEventListener('click', async () => {
+        const selected = Array.from(document.querySelectorAll('.selectable-photo.selected'));
+        if (selected.length === 0) return;
+
+        for (let i = 0; i < selected.length; i++) {
+            const filename = selected[i].dataset.filename;
+            const a = document.createElement('a');
+            a.href = `/static/uploads/${filename}`;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            // Small delay so the browser doesn't block the downloads
+            await new Promise(r => setTimeout(r, 300));
+        }
+    });
+</script>
+{% endblock %}

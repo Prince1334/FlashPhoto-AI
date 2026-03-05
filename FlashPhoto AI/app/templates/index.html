@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="gradient-text">Share Your Event Photos with Magic</h1>
+    <p>AI-Powered Face Matching so your guests instantly find their photos.</p>
+
+    <div class="card glass">
+        <h2>Create a New Event</h2>
+        <form id="create-event-form">
+            <div class="form-group">
+                <input type="text" id="event-name" placeholder="e.g., Jane's Sweet 16, NYE Party 2026..." required>
+            </div>
+            <button type="submit" class="btn primary-btn"><i class="fa-solid fa-magic"></i> Generate Event Link</button>
+        </form>
+        <div id="loading" class="hidden">
+            <div class="spinner"></div> Setting up your event...
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('create-event-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('event-name').value;
+        const btn = e.target.querySelector('button');
+        const loading = document.getElementById('loading');
+
+        btn.style.display = 'none';
+        loading.classList.remove('hidden');
+
+        try {
+            const res = await fetch('/api/events', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.href = `/event/${data.access_code}`;
+            }
+        } catch (err) {
+            alert("Error creating event.");
+            btn.style.display = 'block';
+            loading.classList.add('hidden');
+        }
+    });
+</script>
+{% endblock %}

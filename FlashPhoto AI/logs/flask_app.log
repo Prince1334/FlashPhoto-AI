@@ -1,0 +1,239 @@
+[2026-03-01 13:17:42,702] INFO in logging: Application startup initialized.
+[2026-03-01 13:17:59,022] INFO in logging: Application startup initialized.
+[2026-03-01 13:18:19,787] INFO in logging: Application startup initialized.
+[2026-03-01 13:20:33,089] INFO in logging: Application startup initialized.
+[2026-03-01 13:23:21,863] INFO in logging: Application startup initialized.
+[2026-03-01 13:25:38,361] INFO in logging: Application startup initialized.
+[2026-03-01 13:26:18,182] INFO in logging: Application startup initialized.
+[2026-03-01 13:26:46,266] INFO in logging: Application startup initialized.
+[2026-03-01 13:28:01,625] INFO in logging: Application startup initialized.
+[2026-03-01 13:31:12,739] INFO in logging: Application startup initialized.
+[2026-03-01 13:31:25,613] INFO in logging: Application startup initialized.
+[2026-03-01 13:33:06,643] INFO in logging: Application startup initialized.
+[2026-03-01 13:33:18,811] INFO in logging: Application startup initialized.
+[2026-03-01 13:40:35,372] INFO in logging: Application startup initialized.
+[2026-03-01 13:40:56,990] ERROR in app: Exception on /api/events [POST]
+Traceback (most recent call last):
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3317, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\connections.py", line 365, in __init__
+    self.connect()
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\connections.py", line 681, in connect
+    self._request_authentication()
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\connections.py", line 980, in _request_authentication
+    auth_packet = _auth.caching_sha2_password_auth(self, auth_packet)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\_auth.py", line 245, in caching_sha2_password_auth
+    pkt = conn._read_packet()
+          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\connections.py", line 782, in _read_packet
+    packet.raise_for_error()
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.OperationalError: (1049, "Unknown database 'flashphoto_db'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\app\routes\api.py", line 35, in create_event
+    db.session.commit()
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\scoping.py", line 597, in commit
+    return self._proxied.commit()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+  File "<string>", line 2, in commit
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1311, in commit
+    self._prepare_impl()
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1286, in _prepare_impl
+    self.session.flush()
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4331, in flush
+    self._flush(objects)
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4466, in _flush
+    with util.safe_reraise():
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4427, in _flush
+    flush_context.execute()
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 60, in save_obj
+    for (
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 223, in _organize_states_for_save
+    for state, dict_, mapper, connection in _connections_for_states(
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1759, in _connections_for_states
+    connection = uowtransaction.transaction.connection(base_mapper)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in connection
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1037, in connection
+    return self._connection_for_bind(bind, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1173, in _connection_for_bind
+    conn = self._parent._connection_for_bind(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1187, in _connection_for_bind
+    conn = bind.connect()
+           ^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3293, in connect
+    return self._connection_cls(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3317, in raw_connection
+    return self.pool.connect()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 448, in connect
+    return _ConnectionFairy._checkout(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1272, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 712, in checkout
+    rec = pool._do_get()
+          ^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 389, in _create_connection
+    return _ConnectionRecord(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 674, in __init__
+    self.__connect()
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 900, in __connect
+    with util.safe_reraise():
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 121, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 896, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\connections.py", line 365, in __init__
+    self.connect()
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\connections.py", line 681, in connect
+    self._request_authentication()
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\connections.py", line 980, in _request_authentication
+    auth_packet = _auth.caching_sha2_password_auth(self, auth_packet)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\_auth.py", line 245, in caching_sha2_password_auth
+    pkt = conn._read_packet()
+          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\connections.py", line 782, in _read_packet
+    packet.raise_for_error()
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "C:\Users\princ\OneDrive\Desktop\photo\.venv\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (1049, "Unknown database 'flashphoto_db'")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+[2026-03-01 13:40:57,006] ERROR in __init__: 500 Server Error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+[2026-03-01 13:42:55,206] INFO in logging: Application startup initialized.
+[2026-03-01 13:43:26,778] INFO in logging: Application startup initialized.
+[2026-03-01 13:43:50,693] INFO in logging: Application startup initialized.
+[2026-03-01 13:46:20,715] INFO in logging: Application startup initialized.
+[2026-03-01 13:46:48,075] INFO in __init__: 404 Error: http://192.168.125.15:5000/favicon.ico
+[2026-03-03 12:16:04,899] INFO in logging: Application startup initialized.
+[2026-03-03 12:16:23,896] INFO in __init__: 404 Error: http://localhost:5000/favicon.ico
+[2026-03-03 12:17:16,542] INFO in __init__: 404 Error: http://3eb4-2402-3a80-440c-e88e-d413-78a9-db1c-b1df.ngrok-free.app/favicon.ico
+[2026-03-03 12:36:36,015] INFO in logging: Application startup initialized.
+[2026-03-03 12:38:52,050] INFO in logging: Application startup initialized.
+[2026-03-03 12:39:45,381] INFO in logging: Application startup initialized.
+[2026-03-03 12:41:16,845] INFO in logging: Application startup initialized.
+[2026-03-03 12:47:11,268] INFO in logging: Application startup initialized.
+[2026-03-03 14:16:07,667] INFO in logging: Application startup initialized.
+[2026-03-03 14:41:28,626] INFO in logging: Application startup initialized.
+[2026-03-03 14:43:22,496] INFO in logging: Application startup initialized.
+[2026-03-03 14:44:56,689] INFO in logging: Application startup initialized.
+[2026-03-03 14:52:14,659] INFO in logging: Application startup initialized.
+[2026-03-03 15:02:15,900] INFO in logging: Application startup initialized.
+[2026-03-03 18:45:09,892] INFO in logging: Application startup initialized.
+[2026-03-03 19:19:13,661] INFO in logging: Application startup initialized.
+[2026-03-03 19:26:04,337] INFO in logging: Application startup initialized.
+[2026-03-03 19:33:32,315] INFO in logging: Application startup initialized.
+[2026-03-03 19:45:40,630] INFO in logging: Application startup initialized.
+[2026-03-03 20:00:19,084] INFO in logging: Application startup initialized.

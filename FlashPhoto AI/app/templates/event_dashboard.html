@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard fade-in">
+    <div class="header-banner">
+        <h2>{{ event.name }} - Photographer Dashboard</h2>
+        <div class="event-meta">
+            <span><i class="fa-solid fa-calendar"></i> {{ event.created_at.strftime('%Y-%m-%d') }}</span>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="card qr-section glass">
+            <h3>Share this Event</h3>
+            <p>Attendees scan this QR to find their photos:</p>
+            <div class="qr-code">
+                <img src="data:image/png;base64,{{ qr_b64 }}" alt="Event QR Code" />
+            </div>
+            <p class="direct-link">
+                Or visit: <a href="{{ url_for('views.attendee_scan', access_code=event.access_code) }}"
+                    target="_blank">Event
+                    Link <i class="fa-solid fa-external-link-alt"></i></a>
+            </p>
+        </div>
+
+        <div class="card upload-section glass">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <h3 style="margin:0;">Upload Event Photos</h3>
+                <button id="clear-db-btn"
+                    style="background:#dc3545;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;gap:6px;">
+                    <i class="fa-solid fa-trash"></i> Clear Database
+                </button>
+                <button id="clear-gpu-btn"
+                    style="background:#6f42c1;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;gap:6px;">
+                    <i class="fa-solid fa-microchip"></i> Clear GPU Cache
+                </button>
+            </div>
+            <div class="drop-zone" id="drop-zone">
+                <i class="fa-solid fa-cloud-upload-alt upload-icon"></i>
+                <p>Drag &amp; drop photos <strong>or a folder</strong> here, or use the buttons below.</p>
+                <input type="file" id="file-input" multiple accept="image/*" class="hidden-input">
+                <input type="file" id="folder-input" webkitdirectory multiple accept="image/*" class="hidden-input">
+            </div>
+            <div class="upload-buttons" style="display:flex;gap:10px;margin-top:10px;">
+                <button class="btn primary-btn" onclick="document.getElementById('file-input').click()">
+                    <i class="fa-solid fa-images"></i> Select Photos
+                </button>
+                <button class="btn primary-btn" onclick="document.getElementById('folder-input').click()">
+                    <i class="fa-solid fa-folder-open"></i> Select Folder
+                </button>
+            </div>
+
+            <div id="upload-progress" class="hidden">
+                <h4>Uploading & Processing...</h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill">0%</div>
+                </div>
+                <div class="upload-log" id="upload-log"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const folderInput = document.getElementById('folder-input');
+    const accessCode = "{{ event.access_code }}";
+
+    // Clicking the drop-zone itself no longer triggers an input — buttons do that.
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('highlight'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('highlight'), false);
+    });
+
+    dropZone.addEventListener('drop', handleDrop, false);
+    fileInput.addEventListener('change', function () { handleFiles(Array.from(this.files)); });
+    folderInput.addEventListener('change', function () { handleFiles(Array.from(this.files)); });
+
+    /** Recursively read a FileSystemEntry and collect image Files. */
+    function collectFromEntry(entry) {
+        return new Promise((resolve) => {
+            if (entry.isFile) {
+                entry.file((file) => {
+                    if (file.type.startsWith('image/')) resolve([file]);
+                    else resolve([]);
+                }, () => resolve([]));
+            } else if (entry.isDirectory) {
+                const reader = entry.createReader();
+                const allFiles = [];
+                function readBatch() {
+                    reader.readEntries(async (entries) => {
+                        if (entries.length === 0) {
+                            resolve(allFiles);
+                        } else {
+                            const nested = await Promise.all(entries.map(collectFromEntry));
+                            nested.forEach(arr => allFiles.push(...arr));
+                            readBatch(); // readEntries may return batches — keep reading
+                        }
+                    }, () => resolve(allFiles));
+                }
+                readBatch();
+            } else {
+                resolve([]);
+            }
+        });
+    }
+
+    async function handleDrop(e) {
+        const items = Array.from(e.dataTransfer.items);
+        // Use FileSystem API so we can recurse into dropped folders
+        const entries = items.map(item => item.webkitGetAsEntry ? item.webkitGetAsEntry() : null).filter(Boolean);
+        if (entries.length > 0) {
+            const nested = await Promise.all(entries.map(collectFromEntry));
+            const files = nested.flat();
+            if (files.length > 0) { handleFiles(files); return; }
+        }
+        // Fallback: no entries API — use plain files list
+        handleFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+    }
+
+    // ── Clear GPU Cache ───────────────────────────────────────────────────
+    document.getElementById('clear-gpu-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('clear-gpu-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Clearing...';
+
+        try {
+            const res  = await fetch('/api/gpu/clear-cache', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                alert(
+                    `GPU cache cleared!\n` +
+                    `Freed: ${data.freed_mb} MB\n` +
+                    `Reserved before: ${data.before.reserved_mb} MB → after: ${data.after.reserved_mb} MB\n` +
+                    `Allocated: ${data.after.allocated_mb} MB still in use`
+                );
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        } catch (err) {
+            alert('Request failed: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-microchip"></i> Clear GPU Cache';
+        }
+    });
+
+    // ── Clear Database ────────────────────────────────────────────────────
+    document.getElementById('clear-db-btn').addEventListener('click', async () => {
+        if (!confirm('Delete ALL photos and face encodings for this event?\nThis cannot be undone.')) return;
+
+        const btn = document.getElementById('clear-db-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Clearing...';
+
+        try {
+            const res  = await fetch(`/api/events/${accessCode}/clear`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Cleared ${data.deleted_photos} photo record(s) and ${data.deleted_files} file(s) from disk.`);
+                document.getElementById('upload-log').innerHTML = '';
+                document.getElementById('upload-progress').classList.add('hidden');
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        } catch (err) {
+            alert('Request failed: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-trash"></i> Clear Database';
+        }
+    });
+
+    async function handleFiles(files) {
+        if (files.length === 0) return;
+
+        document.getElementById('upload-progress').classList.remove('hidden');
+        const total = files.length;
+        let completed = 0;
+        const log = document.getElementById('upload-log');
+        const fill = document.getElementById('progress-fill');
+
+        // Upload in parallel batches of BATCH_SIZE for maximum throughput.
+        const BATCH_SIZE = 6;
+
+        for (let start = 0; start < total; start += BATCH_SIZE) {
+            const batch = Array.from(files).slice(start, start + BATCH_SIZE);
+
+            const promises = batch.map(file => {
+                const textNode = document.createElement('div');
+                textNode.className = 'log-item text-muted';
+                textNode.innerText = `Processing ${file.name}...`;
+                log.prepend(textNode);
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                return fetch(`/api/events/${accessCode}/upload`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        textNode.innerHTML = `<span class="text-success"><i class="fa-solid fa-check-circle"></i> ${file.name} - Processing in background</span>`;
+                    } else {
+                        textNode.innerHTML = `<span class="text-danger"><i class="fa-solid fa-times-circle"></i> ${file.name} - Error: ${data.error}</span>`;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    textNode.innerHTML = `<span class="text-danger"><i class="fa-solid fa-times-circle"></i> ${file.name} - Upload failed</span>`;
+                })
+                .finally(() => {
+                    completed++;
+                    const percent = Math.round((completed / total) * 100);
+                    fill.style.width = percent + '%';
+                    fill.innerText = percent + '%';
+                });
+            });
+
+            // Wait for the current batch before starting the next one
+            await Promise.all(promises);
+        }
+    }
+</script>
+{% endblock %}
